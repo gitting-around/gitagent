@@ -8,6 +8,7 @@ import numpy as np
 import skfuzzy as fuzz
 from skfuzzy import control as ctrl
 import pdb
+import rospy
 
 
 class Core:
@@ -603,19 +604,35 @@ class Core:
         self.performance = performance
 
         #if not self.ID == 1:
-
-        if ag_risk >= 0.5 and culture <= 0.5:
+        if ag_risk[0] >= 0.5 and culture <= 0.5:
+            msg = "ag_risk %s, culture %f, ten_shots %s" % (str(ag_risk), culture, str(self.ten_shots))
+            rospy.loginfo(msg)
             self.delta = 0.1
             for x in self.ten_shots:
                 if ag_id == x[0]:
-                    x[1].append(ag_risk)
-        elif (ag_risk < 0.5 and culture > 0.5) or (ag_risk < 0.5 and culture <= 0.5):
+                    if x[1]:
+                        if ag_risk[1] > x[1][-1][1]:
+                            x[1].append(ag_risk)
+                    else:
+                        x[1].append(ag_risk)
+
+            msg = "ten_shots %s" % (str(self.ten_shots))
+            rospy.loginfo(msg)
+        elif (ag_risk[0] < 0.5 and culture > 0.5) or (ag_risk[0] < 0.5 and culture <= 0.5):
+            msg = "ag_risk %f, culture %f, ten_shots %s" % (ag_risk[0], culture, str(self.ten_shots))
+            rospy.loginfo(msg)
             self.delta += 5 * self.step
-        elif ag_risk >= 0.5 and culture > 0.5:
+        elif ag_risk[0] >= 0.5 and culture > 0.5:
+            msg = "ag id %d, ag_risk %s, culture %f, ten_shots %s, len %d" % (ag_id, str(ag_risk), culture, str(self.ten_shots), len(self.ten_shots))
+            rospy.loginfo(msg)
             for x in self.ten_shots:
                 if ag_id == x[0]:
-                    if len(x[1]) < 3:
-                        x[1].append(ag_risk)
+                    if len(x[1]) < 5:
+                        if x[1]:
+                            if ag_risk[1] > x[1][-1][1]:
+                                x[1].append(ag_risk)
+                        else:
+                            x[1].append(ag_risk)
                         self.delta -= self.step
                     else:
                         self.delta = 0.1

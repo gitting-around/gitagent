@@ -51,46 +51,57 @@ class GitAgent(agent0.Agent0):
                                     '[callback ' + str(self.simulation.callback_bc) + '] new plan into queue\n\n')
 
     def register_sender(self, data):
-        guy_id_srv = []
-        if not data.performative == 'highlevelplan':
-            guy_id_srv = [int(data.sender), -1]
-            guy_id_srv.append([int(x) for x in filter(None, data.content.split('|'))])
-            exp = []
-            self.log.write_log_file(self.log.stdout_callback,
-                                    '[callback ' + str(self.simulation.callback_bc) + '] ' + str(guy_id_srv) + '\n')
-            self.log.write_log_file(self.log.stdout_callback,
-                                    '[callback ' + str(self.simulation.callback_bc) + '] ' + str(guy_id_srv[2]) + '\n')
+        try:
+            guy_id_srv = []
+            if not data.performative == 'highlevelplan':
+                guy_id_srv = [int(data.sender), -1]
+                guy_id_srv.append([int(x) for x in filter(None, data.content.split('|'))])
+                exp = []
+                self.log.write_log_file(self.log.stdout_callback,
+                                        '[callback ' + str(self.simulation.callback_bc) + '] ' + str(guy_id_srv) + '\n')
+                self.log.write_log_file(self.log.stdout_callback,
+                                        '[callback ' + str(self.simulation.callback_bc) + '] ' + str(guy_id_srv[2]) + '\n')
+                for x in range(0, len(guy_id_srv[2])):
+                    exp.append(-1)
+                guy_id_srv.append(exp)
+
+                guy_id_srv.append(time.time())
+                self.log.write_log_file(self.log.stdout_callback,
+                                        '[callback ' + str(self.simulation.callback_bc) + '] ' + str(guy_id_srv) + '\n')
+            else:
+                self.log.write_log_file(self.log.stdout_callback,
+                                        '[callback ' + str(self.simulation.callback_bc) + ']' + str(data) + '\n')
+                guy_id_srv = [int(data.sender), -1]
+                guy_id_srv.append([])
+                exp = []
+                guy_id_srv.append(exp)
+                guy_id_srv.append(time.time())
+
+            msg = "new guy %s" % (guy_id_srv)
+            rospy.loginfo(msg)
+            self.myknowledge.lock.acquire()
+            self.myknowledge.known_people.append(guy_id_srv)
+            self.myknowledge.helping_interactions.append(0)
+            self.myknowledge.total_interactions.append(0)
+
+            self.mycore.ten_shots.append([int(data.sender), []])
+            temp_values = []
             for x in range(0, len(guy_id_srv[2])):
-                exp.append(-1)
-            guy_id_srv.append(exp)
+                temp_values.append([0, 0])
+            self.myknowledge.capability_expertise.append(temp_values)
+            self.myknowledge.lock.release()
+
             self.log.write_log_file(self.log.stdout_callback,
-                                    '[callback ' + str(self.simulation.callback_bc) + '] ' + str(guy_id_srv) + '\n')
-        else:
+                                    '[callback ' + str(self.simulation.callback_bc) + '] known people ' + str(
+                                        self.myknowledge.known_people) + '\n')
+
             self.log.write_log_file(self.log.stdout_callback,
-                                    '[callback ' + str(self.simulation.callback_bc) + ']' + str(data) + '\n')
-            guy_id_srv = [int(data.sender), -1]
-            guy_id_srv.append([])
-            exp = []
-            guy_id_srv.append(exp)
+                                    '[callback ' + str(self.simulation.callback_bc) + '] capability_expertise ' + str(
+                                        self.myknowledge.capability_expertise) + '\n')
 
-        self.myknowledge.lock.acquire()
-        self.myknowledge.known_people.append(guy_id_srv)
-        self.myknowledge.helping_interactions.append(0)
-        self.myknowledge.total_interactions.append(0)
-        self.mycore.ten_shots.append([guy_id_srv, []])
-        temp_values = []
-        for x in range(0, len(guy_id_srv[2])):
-            temp_values.append([0, 0])
-        self.myknowledge.capability_expertise.append(temp_values)
-        self.myknowledge.lock.release()
-
-        self.log.write_log_file(self.log.stdout_callback,
-                                '[callback ' + str(self.simulation.callback_bc) + '] known people ' + str(
-                                    self.myknowledge.known_people) + '\n')
-
-        self.log.write_log_file(self.log.stdout_callback,
-                                '[callback ' + str(self.simulation.callback_bc) + '] capability_expertise ' + str(
-                                    self.myknowledge.capability_expertise) + '\n')
+        except:
+            rospy.loginfo("Unexpected error: " + str(sys.exc_info()[0]) + ". Line nr: " +str(sys.exc_info()[2].tb_lineno))
+            pass
 
     def init_inputs(self, inputs):
         for x in inputs:

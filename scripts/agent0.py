@@ -98,7 +98,7 @@ class Agent0:
         while not rospy.is_shutdown():
             # Simulation stopping criterion
             # if sum(self.simulation.generated_tasks) + 1 > self.simulation.STOP:
-            if (time.time() - self.start) > 7200:
+            if (time.time() - self.start) > 3600:
                 #pdb.set_trace()
                 msg = '[fsm %d] Simulation finished. Number of generated tasks: %d\n' % (
                 self.simulation.fsm, sum(self.simulation.no_self_tasks_attempted))
@@ -290,6 +290,8 @@ class Agent0:
 
             self.myknowledge.known_people[agent_idx][1] = self.myknowledge.helping_interactions[agent_idx]\
                                                           / float(self.myknowledge.total_interactions[agent_idx])
+
+            self.myknowledge.known_people[agent_idx][4] = time.time()
 
             msg += '[fsm ' + str(self.simulation.fsm) + '- blocking_call] perceived help %f\n' % \
                                                         self.myknowledge.known_people[agent_idx][1]
@@ -511,6 +513,7 @@ class Agent0:
             if not aIDx == -1:
                 # It is not success but PERCEIVED WILLINGNESS
                 success = self.myknowledge.known_people[aIDx][1]
+                last_update = self.myknowledge.known_people[aIDx][4]
                 msg = '[adapt %d] In known people, success = %f\n' % (self.simulation.interact, success)
                 msg += '[adapt %d] In known people, %s\n' % (self.simulation.interact, str(self.myknowledge.known_people))
                 # self.log.write_log_file(self.log.stdout_log, msg)
@@ -518,6 +521,7 @@ class Agent0:
             else:
                 success = -1.0
                 msg = '[adapt %d] Not in known people, success = %f\n' % (self.simulation.interact, success)
+                last_update = -1
                 # self.log.write_log_file(self.log.stdout_log, msg)
                 rospy.loginfo(msg)
 
@@ -553,7 +557,7 @@ class Agent0:
             #pdb.set_trace()
             if self.static[1] == 0:
                 self.myknowledge.lock.acquire()
-                accept, delta = self.mycore.b_delta(energy_diff, abil, equip, knowled, tools, env_risk, ag_risk, performance, diff_task_tradeoff, culture, aID)
+                accept, delta = self.mycore.b_delta(energy_diff, abil, equip, knowled, tools, env_risk, [ag_risk, last_update], performance, diff_task_tradeoff, culture, aID)
                 self.myknowledge.lock.release()
             else:
                 delta = self.mycore.delta
