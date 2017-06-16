@@ -236,22 +236,21 @@ class Core:
 
             print subset
             if subset:
-                if random.random() < 0.4:
+                if subset_unknown:
+                    agent_idx = random.randint(0, len(subset_unknown) - 1)
+                    print subset_unknown[agent_idx][0]
+                    success_chance = subset_unknown[agent_idx][1]
+                    print success_chance
+                    agent_id = subset_unknown[agent_idx][0]
+                elif random.random() < 0.4:
                     # Choose an agent randomly
                     #print 'random'
-                    if subset_unknown:
-                        agent_idx = random.randint(0, len(subset_unknown) - 1)
-                        print subset_unknown[agent_idx][0]
-                        success_chance = subset_unknown[agent_idx][1]
-                        print success_chance
-                        agent_id = subset_unknown[agent_idx][0]
-                    else:
-                        agent_idx = random.randint(0, len(subset) - 1)
-                        print subset[agent_idx][0]
-                        success_chance = subset[agent_idx][1]
-                        print success_chance
-                        log.write_log_file(log.stdout_log, 'Randomly chosen: %d\n' % subset[agent_idx][0])
-                        agent_id = subset[agent_idx][0]
+                    agent_idx = random.randint(0, len(subset) - 1)
+                    print subset[agent_idx][0]
+                    success_chance = subset[agent_idx][1]
+                    print success_chance
+                    log.write_log_file(log.stdout_log, 'Randomly chosen: %d\n' % subset[agent_idx][0])
+                    agent_id = subset[agent_idx][0]
                 else:
                     # Select the one which has been most helpful in the past
                     #print 'lambda'
@@ -603,39 +602,39 @@ class Core:
         self.env_risk = env_risk
         self.performance = performance
 
-        #if not self.ID == 1:
-        if ag_risk[0] >= 0.5 and culture <= 0.5:
-            msg = "ag_risk %s, culture %f, ten_shots %s" % (str(ag_risk), culture, str(self.ten_shots))
-            rospy.loginfo(msg)
-            self.delta = 0.1
-            for x in self.ten_shots:
-                if ag_id == x[0]:
-                    if x[1]:
-                        if ag_risk[1] > x[1][-1][1]:
-                            x[1].append(ag_risk)
-                    else:
-                        x[1].append(ag_risk)
-
-            msg = "ten_shots %s" % (str(self.ten_shots))
-            rospy.loginfo(msg)
-        elif (ag_risk[0] < 0.5 and culture > 0.5) or (ag_risk[0] < 0.5 and culture <= 0.5):
-            msg = "ag_risk %f, culture %f, ten_shots %s" % (ag_risk[0], culture, str(self.ten_shots))
-            rospy.loginfo(msg)
-            self.delta += 5 * self.step
-        elif ag_risk[0] >= 0.5 and culture > 0.5:
-            msg = "ag id %d, ag_risk %s, culture %f, ten_shots %s, len %d" % (ag_id, str(ag_risk), culture, str(self.ten_shots), len(self.ten_shots))
-            rospy.loginfo(msg)
-            for x in self.ten_shots:
-                if ag_id == x[0]:
-                    if len(x[1]) < 5:
+        if not self.ID == 1:
+            if ag_risk[0] >= 0.5 and culture <= 0.5:
+                msg = "ag_risk %s, culture %f, ten_shots %s" % (str(ag_risk), culture, str(self.ten_shots))
+                rospy.loginfo(msg)
+                self.delta = 0.1
+                for x in self.ten_shots:
+                    if ag_id == x[0]:
                         if x[1]:
                             if ag_risk[1] > x[1][-1][1]:
                                 x[1].append(ag_risk)
                         else:
                             x[1].append(ag_risk)
-                        self.delta -= self.step
-                    else:
-                        self.delta = 0.1
+
+                msg = "ten_shots %s" % (str(self.ten_shots))
+                rospy.loginfo(msg)
+            elif (ag_risk[0] < 0.5 and culture > 0.5) or (ag_risk[0] < 0.5 and culture <= 0.5):
+                msg = "ag_risk %f, culture %f, ten_shots %s" % (ag_risk[0], culture, str(self.ten_shots))
+                rospy.loginfo(msg)
+                self.delta += 5 * self.step
+            elif ag_risk[0] >= 0.5 and culture > 0.5:
+                msg = "ag id %d, ag_risk %s, culture %f, ten_shots %s, len %d" % (ag_id, str(ag_risk), culture, str(self.ten_shots), len(self.ten_shots))
+                rospy.loginfo(msg)
+                for x in self.ten_shots:
+                    if ag_id == x[0]:
+                        if len(x[1]) >= 0 and len(x[1]) <= 2:
+                            if x[1]:
+                                if ag_risk[1] > x[1][-1][1]:
+                                    x[1].append(ag_risk)
+                            else:
+                                x[1].append(ag_risk)
+                            self.delta -= self.step
+                        else:
+                            self.delta = 0.1
 
 
         if self.delta > 1.0:
