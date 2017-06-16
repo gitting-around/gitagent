@@ -607,16 +607,6 @@ class Core:
                 msg = "ag_risk %s, culture %f, ten_shots %s" % (str(ag_risk), culture, str(self.ten_shots))
                 rospy.loginfo(msg)
                 self.delta = 0.1
-                for x in self.ten_shots:
-                    if ag_id == x[0]:
-                        if x[1]:
-                            if ag_risk[1] > x[1][-1][1]:
-                                x[1].append(ag_risk)
-                        else:
-                            x[1].append(ag_risk)
-
-                msg = "ten_shots %s" % (str(self.ten_shots))
-                rospy.loginfo(msg)
             elif (ag_risk[0] < 0.5 and culture > 0.5) or (ag_risk[0] < 0.5 and culture <= 0.5):
                 msg = "ag_risk %f, culture %f, ten_shots %s" % (ag_risk[0], culture, str(self.ten_shots))
                 rospy.loginfo(msg)
@@ -627,11 +617,6 @@ class Core:
                 for x in self.ten_shots:
                     if ag_id == x[0]:
                         if len(x[1]) >= 0 and len(x[1]) <= 2:
-                            if x[1]:
-                                if ag_risk[1] > x[1][-1][1]:
-                                    x[1].append(ag_risk)
-                            else:
-                                x[1].append(ag_risk)
                             self.delta -= self.step
                         else:
                             self.delta = 0.1

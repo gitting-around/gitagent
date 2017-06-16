@@ -85,6 +85,7 @@ class GitAgent(agent0.Agent0):
             self.myknowledge.total_interactions.append(0)
 
             self.mycore.ten_shots.append([int(data.sender), []])
+
             temp_values = []
             for x in range(0, len(guy_id_srv[2])):
                 temp_values.append([0, 0])

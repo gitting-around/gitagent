@@ -98,7 +98,7 @@ class Agent0:
         while not rospy.is_shutdown():
             # Simulation stopping criterion
             # if sum(self.simulation.generated_tasks) + 1 > self.simulation.STOP:
-            if (time.time() - self.start) > 1800:
+            if (time.time() - self.start) > 10800:
                 #pdb.set_trace()
                 msg = '[fsm %d] Simulation finished. Number of generated tasks: %d\n' % (
                 self.simulation.fsm, sum(self.simulation.no_self_tasks_attempted))
@@ -292,8 +292,15 @@ class Agent0:
                                                           / float(self.myknowledge.total_interactions[agent_idx])
 
             self.myknowledge.known_people[agent_idx][4] = time.time()
+            msg += "ten_of_shots %s" % (str(self.mycore.ten_shots))
+            rospy.loginfo(msg)
+            if self.myknowledge.known_people[agent_idx][1] <= 0.5:
+                self.mycore.ten_shots[agent_idx][1].append([1-self.myknowledge.known_people[agent_idx][1], self.myknowledge.known_people[agent_idx][4]])
 
-            msg += '[fsm ' + str(self.simulation.fsm) + '- blocking_call] perceived help %f\n' % \
+                msg = "ten_of_shots %s" % (str(self.mycore.ten_shots))
+                rospy.loginfo(msg)
+
+            msg = '[fsm ' + str(self.simulation.fsm) + '- blocking_call] perceived help %f\n' % \
                                                         self.myknowledge.known_people[agent_idx][1]
 
             self.myknowledge.known_people[agent_idx][3][task_idx] = \
