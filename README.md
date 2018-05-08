@@ -32,6 +32,8 @@ Copy the /result_scripts/init_4.sh file into the catkin_ws folder and run it.
 
 In order to visualize the results run:
 
+./plot_script.sh
+
 
 
 
